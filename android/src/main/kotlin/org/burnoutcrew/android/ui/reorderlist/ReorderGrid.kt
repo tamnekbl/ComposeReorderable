@@ -15,6 +15,7 @@
  */
 package org.burnoutcrew.android.ui.reorderlist
 
+import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -22,10 +23,13 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.aspectRatio
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.grid.GridCells
+import androidx.compose.foundation.lazy.grid.GridItemSpan
 import androidx.compose.foundation.lazy.grid.LazyHorizontalGrid
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
@@ -35,6 +39,8 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.hapticfeedback.HapticFeedbackType
+import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import org.burnoutcrew.reorderable.ReorderableItem
@@ -92,35 +98,57 @@ private fun VerticalGrid(
     vm: ReorderListViewModel,
     modifier: Modifier = Modifier,
 ) {
-    val state = rememberReorderableLazyGridState(onMove = vm::moveDog, canDragOver = vm::isDogDragEnabled)
+    val haptic = LocalHapticFeedback.current
+
+    val state = rememberReorderableLazyGridState(
+        onMove = { from, to ->
+            vm.moveDog(from, to)
+            haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove)
+        },
+        canDragOver = vm::isDogDragEnabled
+    )
+
     LazyVerticalGrid(
-        columns = GridCells.Fixed(4),
+        columns = GridCells.Fixed(2),
         state = state.gridState,
         contentPadding = PaddingValues(horizontal = 8.dp),
         verticalArrangement = Arrangement.spacedBy(4.dp),
         horizontalArrangement = Arrangement.spacedBy(4.dp),
-        modifier = modifier.reorderable(state)
+        modifier = modifier
+            .reorderable(state)
+            .detectReorderAfterLongPress(state)
     ) {
-        items(vm.dogs, { it.key }) { item ->
-            if (item.isLocked) {
-                Box(
-                    contentAlignment = Alignment.Center,
-                    modifier = Modifier
-                        .size(100.dp)
-                        .background(MaterialTheme.colors.surface)
-                ) {
-                    Text(item.title)
-                }
-            } else {
-                ReorderableItem(state, item.key) { isDragging ->
-                    val elevation = animateDpAsState(if (isDragging) 8.dp else 0.dp)
+        items(
+            items = vm.dogs,
+            key = { it.key },
+            span = {  GridItemSpan(if (it.isLocked) this.maxLineSpan else 1) }
+        ) { item ->
+            ReorderableItem(state, item.key) { isDragging ->
+                val elevation = animateDpAsState(if (isDragging) 8.dp else 0.dp)
+                val color = animateColorAsState(
+                    if (isDragging)
+                        MaterialTheme.colors.primary
+                    else
+                        MaterialTheme.colors.secondary
+                )
+                if (item.isLocked) {
+                    Box(
+                        contentAlignment = Alignment.Center,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .heightIn(50.dp)
+                            .background(if (isDragging) MaterialTheme.colors.primary else MaterialTheme.colors.surface)
+                    ) {
+                        Text(item.title)
+                    }
+                } else {
                     Box(
                         contentAlignment = Alignment.Center,
                         modifier = Modifier
                             .detectReorderAfterLongPress(state)
                             .shadow(elevation.value)
-                            .aspectRatio(1f)
-                            .background(MaterialTheme.colors.primary)
+                            .aspectRatio(16/7f)
+                            .background(color.value)
                     ) {
                         Text(item.title)
                     }

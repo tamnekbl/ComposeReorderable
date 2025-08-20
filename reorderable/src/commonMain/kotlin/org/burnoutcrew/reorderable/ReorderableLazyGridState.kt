@@ -84,6 +84,10 @@ class ReorderableLazyGridState(
         get() = index
     override val LazyGridItemInfo.itemKey: Any
         get() = key
+    override val LazyGridItemInfo.isMaxSpan: Boolean
+        get() = gridState.layoutInfo.maxSpan == span
+
+
     override val visibleItemsInfo: List<LazyGridItemInfo>
         get() = gridState.layoutInfo.visibleItemsInfo
     override val viewportStartOffset: Int

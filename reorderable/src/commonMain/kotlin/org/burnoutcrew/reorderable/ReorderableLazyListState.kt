@@ -117,6 +117,8 @@ class ReorderableLazyListState(
         get() = index
     override val LazyListItemInfo.itemKey: Any
         get() = key
+    override val LazyListItemInfo.isMaxSpan: Boolean
+        get() = false
     override val visibleItemsInfo: List<LazyListItemInfo>
         get() = listState.layoutInfo.visibleItemsInfo
     override val viewportStartOffset: Int

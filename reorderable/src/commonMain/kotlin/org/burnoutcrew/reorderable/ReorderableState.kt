@@ -56,6 +56,7 @@ abstract class ReorderableState<T>(
     protected abstract val T.height: Int
     protected abstract val T.itemIndex: Int
     protected abstract val T.itemKey: Any
+    protected abstract val T.isMaxSpan: Boolean
     protected abstract val visibleItemsInfo: List<T>
     protected abstract val firstVisibleItemIndex: Int
     protected abstract val firstVisibleItemScrollOffset: Int
@@ -245,10 +246,12 @@ abstract class ReorderableState<T>(
         val bottom = curY + draggedItemInfo.height
         val dx = curX - draggedItemInfo.left
         val dy = curY - draggedItemInfo.top
+        val centerY = bottom - draggedItemInfo.height / 2
+        val centerX = right - draggedItemInfo.width / 2
 
         items.fastForEach { item ->
-            if (dx > 0) {
-                val diff = item.right - right
+            if (dx > 0) {//если мы перепрыгиваем соседа справа
+                val diff =  item.right - right
                 if (diff < 0 && item.right > draggedItemInfo.right) {
                     val score = diff.absoluteValue
                     if (score > highScore) {
@@ -257,7 +260,7 @@ abstract class ReorderableState<T>(
                     }
                 }
             }
-            if (dx < 0) {
+            if (dx < 0) {//если мы перепрыгиваем соседа слева
                 val diff = item.left - curX
                 if (diff > 0 && item.left < draggedItemInfo.left) {
                     val score = diff.absoluteValue
@@ -267,8 +270,9 @@ abstract class ReorderableState<T>(
                     }
                 }
             }
-            if (dy < 0) {
-                val diff = item.top - curY
+            if (dy < 0) {//если мы перепрыгиваем соседа сверху
+                val diff = if (item.isMaxSpan) item.top - centerY else item.top - curY
+                //println("log22up diff = $diff, ${}")
                 if (diff > 0 && item.top < draggedItemInfo.top) {
                     val score = diff.absoluteValue
                     if (score > highScore) {
@@ -277,8 +281,9 @@ abstract class ReorderableState<T>(
                     }
                 }
             }
-            if (dy > 0) {
-                val diff = item.bottom - bottom
+            if (dy > 0) {//если мы перепрыгиваем соседа снизу
+                val diff = if (item.isMaxSpan) item.bottom - centerY else item.bottom - bottom
+                //println("log22 diff = $diff, ${}")
                 if (diff < 0 && item.bottom > draggedItemInfo.bottom) {
                     val score = diff.absoluteValue
                     if (score > highScore) {
