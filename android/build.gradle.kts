@@ -1,44 +1,56 @@
 plugins {
-    id("org.jetbrains.compose")
     id("com.android.application")
     kotlin("android")
-}
-
-dependencies {
-    implementation(project(":reorderable"))
-    implementation("androidx.compose.runtime:runtime:1.3.3")
-    implementation("androidx.compose.material:material:1.3.1")
-    implementation("androidx.activity:activity-compose:1.6.1")
-    implementation("com.google.android.material:material:1.8.0")
-    implementation("androidx.lifecycle:lifecycle-viewmodel-ktx:2.5.1")
-    implementation("androidx.lifecycle:lifecycle-viewmodel-compose:2.5.1")
-    implementation("androidx.navigation:navigation-compose:2.5.3")
-    implementation("io.coil-kt:coil-compose:2.2.2")
+    id("org.jetbrains.kotlin.plugin.compose")
 }
 
 android {
+    namespace = "org.burnoutcrew.android"
 
-    sourceSets {
-        map { it.java.srcDir("src/${it.name}/kotlin") }
-    }
-    val minSdkVersion: Int by rootProject.extra
-    val targetSdkVersion: Int by rootProject.extra
-    val compileSdkVersion: Int by rootProject.extra
-    compileSdk = compileSdkVersion
+    compileSdk = rootProject.extra["compileSdkVersion"] as Int
+
     defaultConfig {
-        minSdk =  minSdkVersion
-        targetSdk = targetSdkVersion
+        applicationId = "org.burnoutcrew.android"
+        minSdk = rootProject.extra["minSdkVersion"] as Int
+        targetSdk = rootProject.extra["targetSdkVersion"] as Int
+
         versionCode = 1
         versionName = "1.0"
     }
 
+    sourceSets {
+        map { it.java.srcDir("src/${it.name}/kotlin") }
+    }
+
     compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_11
-        targetCompatibility = JavaVersion.VERSION_11
+        sourceCompatibility = JavaVersion.VERSION_17
+        targetCompatibility = JavaVersion.VERSION_17
     }
 
     kotlinOptions {
-        jvmTarget = "1.8"
+        jvmTarget = "17"
+        // Для стабильной работы с Kotlin 1.9+
+        freeCompilerArgs = listOf("-Xjvm-default=all")
     }
-    namespace = "org.burnoutcrew.android"
+}
+
+dependencies {
+    implementation(project(":reorderable"))
+
+    implementation("androidx.compose.runtime:runtime:1.8.3")
+    implementation("androidx.compose.material:material:1.8.3")
+
+    implementation("androidx.compose.material:material-icons-core:1.7.8")
+    implementation("androidx.compose.material:material-icons-extended:1.7.8")
+
+    implementation("androidx.activity:activity-compose:1.10.1")
+
+    implementation("com.google.android.material:material:1.12.0")
+
+    implementation("androidx.lifecycle:lifecycle-viewmodel-ktx:2.9.2")
+    implementation("androidx.lifecycle:lifecycle-viewmodel-compose:2.9.2")
+
+    implementation("androidx.navigation:navigation-compose:2.9.3")
+
+    implementation("io.coil-kt:coil-compose:2.7.0")
 }
